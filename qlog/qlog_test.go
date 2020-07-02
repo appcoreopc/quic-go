@@ -269,9 +269,9 @@ var _ = Describe("Tracer", func() {
 				},
 				987,
 				nil,
-				[]wire.Frame{
-					&wire.MaxStreamDataFrame{StreamID: 42, ByteOffset: 987},
-					&wire.StreamFrame{StreamID: 123, Offset: 1234, Data: []byte("foobar"), FinBit: true},
+				[]logging.Frame{
+					&logging.MaxStreamDataFrame{StreamID: 42, ByteOffset: 987},
+					&logging.StreamFrame{StreamID: 123, Offset: 1234, Length: 6, FinBit: true},
 				},
 			)
 			entry := exportAndParseSingle()
@@ -299,8 +299,8 @@ var _ = Describe("Tracer", func() {
 					PacketNumber: 1337,
 				},
 				123,
-				&wire.AckFrame{AckRanges: []wire.AckRange{{Smallest: 1, Largest: 10}}},
-				[]wire.Frame{&wire.MaxDataFrame{ByteOffset: 987}},
+				&logging.AckFrame{AckRanges: []wire.AckRange{{Smallest: 1, Largest: 10}}},
+				[]logging.Frame{&wire.MaxDataFrame{ByteOffset: 987}},
 			)
 			entry := exportAndParseSingle()
 			ev := entry.Event
@@ -326,9 +326,9 @@ var _ = Describe("Tracer", func() {
 					PacketNumber: 1337,
 				},
 				789,
-				[]wire.Frame{
-					&wire.MaxStreamDataFrame{StreamID: 42, ByteOffset: 987},
-					&wire.StreamFrame{StreamID: 123, Offset: 1234, Data: []byte("foobar"), FinBit: true},
+				[]logging.Frame{
+					&logging.MaxStreamDataFrame{StreamID: 42, ByteOffset: 987},
+					&logging.StreamFrame{StreamID: 123, Offset: 1234, Length: 6, FinBit: true},
 				},
 			)
 			entry := exportAndParseSingle()
