@@ -11,32 +11,64 @@ import (
 	"github.com/lucas-clemente/quic-go/internal/wire"
 )
 
+type (
+	ByteCount           = protocol.ByteCount
+	ConnectionID        = protocol.ConnectionID
+	EncryptionLevel     = protocol.EncryptionLevel
+	KeyPhase            = protocol.KeyPhase
+	PacketNumber        = protocol.PacketNumber
+	Perspective         = protocol.Perspective
+	StreamID            = protocol.StreamID
+	StreamNum           = protocol.StreamNum
+	StreamType          = protocol.StreamType
+	VersionNumber       = protocol.VersionNumber
+	Header              = wire.Header
+	ExtendedHeader      = wire.ExtendedHeader
+	TransportParameters = wire.TransportParameters
+
+	RTTStats = congestion.RTTStats
+)
+
+const (
+	// PerspectiveServer is used for a QUIC server
+	PerspectiveServer Perspective = protocol.PerspectiveServer
+	// PerspectiveClient is used for a QUIC client
+	PerspectiveClient Perspective = protocol.PerspectiveClient
+)
+
+const (
+	// StreamTypeUni is a unidirectional stream
+	StreamTypeUni = protocol.StreamTypeUni
+	// StreamTypeBidi is a bidirectional stream
+	StreamTypeBidi = protocol.StreamTypeBidi
+)
+
 type Tracer interface {
-	TracerForServer(odcid protocol.ConnectionID) ConnectionTracer
-	TracerForClient(odcid protocol.ConnectionID) ConnectionTracer
+	TracerForServer(odcid ConnectionID) ConnectionTracer
+	TracerForClient(odcid ConnectionID) ConnectionTracer
 }
 
 // A ConnectionTracer records events.
 type ConnectionTracer interface {
-	StartedConnection(local, remote net.Addr, version protocol.VersionNumber, srcConnID, destConnID protocol.ConnectionID)
+	StartedConnection(local, remote net.Addr, version VersionNumber, srcConnID, destConnID ConnectionID)
 	ClosedConnection(CloseReason)
-	SentTransportParameters(*wire.TransportParameters)
-	ReceivedTransportParameters(*wire.TransportParameters)
-	SentPacket(hdr *wire.ExtendedHeader, packetSize protocol.ByteCount, ack *wire.AckFrame, frames []wire.Frame)
-	ReceivedVersionNegotiationPacket(*wire.Header)
-	ReceivedRetry(*wire.Header)
-	ReceivedPacket(hdr *wire.ExtendedHeader, packetSize protocol.ByteCount, frames []wire.Frame)
+	SentTransportParameters(*TransportParameters)
+	ReceivedTransportParameters(*TransportParameters)
+	SentPacket(hdr *ExtendedHeader, packetSize ByteCount, ack *wire.AckFrame, frames []wire.Frame)
+	ReceivedVersionNegotiationPacket(*Header)
+	ReceivedRetry(*Header)
+	ReceivedPacket(hdr *ExtendedHeader, packetSize ByteCount, frames []wire.Frame)
 	ReceivedStatelessReset(token *[16]byte)
 	BufferedPacket(PacketType)
-	DroppedPacket(PacketType, protocol.ByteCount, PacketDropReason)
-	UpdatedMetrics(rttStats *congestion.RTTStats, cwnd protocol.ByteCount, bytesInFLight protocol.ByteCount, packetsInFlight int)
-	LostPacket(protocol.EncryptionLevel, protocol.PacketNumber, PacketLossReason)
+	DroppedPacket(PacketType, ByteCount, PacketDropReason)
+	UpdatedMetrics(rttStats *RTTStats, cwnd ByteCount, bytesInFLight ByteCount, packetsInFlight int)
+	LostPacket(EncryptionLevel, PacketNumber, PacketLossReason)
 	UpdatedPTOCount(value uint32)
-	UpdatedKeyFromTLS(protocol.EncryptionLevel, protocol.Perspective)
-	UpdatedKey(generation protocol.KeyPhase, remote bool)
-	DroppedEncryptionLevel(protocol.EncryptionLevel)
-	SetLossTimer(TimerType, protocol.EncryptionLevel, time.Time)
-	LossTimerExpired(TimerType, protocol.EncryptionLevel)
+	UpdatedKeyFromTLS(EncryptionLevel, Perspective)
+	UpdatedKey(generation KeyPhase, remote bool)
+	DroppedEncryptionLevel(EncryptionLevel)
+	SetLossTimer(TimerType, EncryptionLevel, time.Time)
+	LossTimerExpired(TimerType, EncryptionLevel)
 	LossTimerCanceled()
 	// Close is called when the connection is closed.
 	Close()
